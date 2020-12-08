@@ -1,8 +1,6 @@
 package controllers.reports;
 
 import java.io.IOException;
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -13,22 +11,21 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import models.Employee;
 import models.Report;
 import models.validators.ReportValidator;
 import utils.DBUtil;
 
 /**
- * Servlet implementation class ReportsCreateServlet
+ * Servlet implementation class ReportsLikeCountServlet
  */
-@WebServlet("/reports/create")
-public class ReportsCreateServlet extends HttpServlet {
+@WebServlet("/reports/like_count_bc")
+public class ReportsLikeCountServlet_bc extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public ReportsCreateServlet() {
+    public ReportsLikeCountServlet_bc() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -41,24 +38,11 @@ public class ReportsCreateServlet extends HttpServlet {
         if(_token != null && _token.equals(request.getSession().getId())) {
             EntityManager em = DBUtil.createEntityManager();
 
-            Report r = new Report();
+            Report r = em.find(Report.class, (Integer)(request.getSession().getAttribute("report_id")));
 
-            r.setEmployee((Employee)request.getSession().getAttribute("login_employee"));
-
-            Date report_date = new Date(System.currentTimeMillis());
-            String rd_str = request.getParameter("report_date");
-            if(rd_str != null && !rd_str.equals("")) {
-                report_date = Date.valueOf(request.getParameter("report_date"));
-            }
-            r.setReport_date(report_date);
-
-            r.setTitle(request.getParameter("title"));
-            r.setContent(request.getParameter("content"));
-
-            Timestamp currentTime = new Timestamp(System.currentTimeMillis());
-            r.setCreated_at(currentTime);
-            r.setUpdated_at(currentTime);
-            r.setLike_count(0); // いいね！初期値0
+            int lc;
+            lc = r.getLike_count()+1;
+            r.setLike_count(lc); //いいね！数を１加算する
 
             List<String> errors = ReportValidator.validate(r);
             if(errors.size() > 0) {
@@ -68,14 +52,15 @@ public class ReportsCreateServlet extends HttpServlet {
                 request.setAttribute("report", r);
                 request.setAttribute("errors", errors);
 
-                RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/views/reports/new.jsp");
+                RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/views/reports/edit.jsp");
                 rd.forward(request, response);
             } else {
                 em.getTransaction().begin();
-                em.persist(r);
                 em.getTransaction().commit();
                 em.close();
-                request.getSession().setAttribute("flush", "登録が完了しました。");
+                request.getSession().setAttribute("flush", "いいね！しました。");
+
+                request.getSession().removeAttribute("report_id");
 
                 response.sendRedirect(request.getContextPath() + "/reports/index");
             }

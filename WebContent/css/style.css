@@ -158,6 +158,10 @@ table#report_list .report_action {
     width: 13%;
 }
 
+table#report_list .report_like_count { /*作動してない気がする*/
+    width: 20%;
+}
+
 h3 {
     font-size: larger;
 }
