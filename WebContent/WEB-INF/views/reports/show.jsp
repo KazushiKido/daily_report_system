@@ -38,7 +38,7 @@
                         <tr>
                             <th>いいね！数</th>
                             <td>
-                                <pre><c:out value="${report.like_count}" /></pre>
+                                <a href="<c:url value="/reports/like_show?id=${report.id}" />"><c:out value="${report.like_count}" /></a>
                             </td>
                         </tr>
                     </tbody>
@@ -48,8 +48,13 @@
                         <p><a href="<c:url value="/reports/edit?id=${report.id}" />">この日報を編集する</a></p>
                     </c:when>
                     <c:otherwise>
-                        <p><a href="<c:url value="/reports/like_count?id=${report.id}" />">この日報にいいね！する</a></p>
+                        <%--  自分以外　かつ　いいねをしていない　という条件をいれたい --%>
+                        <c:if test="${like_check == 0}" >
+                           <p><a href="<c:url value="/reports/like_count?id=${report.id}" />">この日報にいいね！する</a></p>
+                        </c:if>
                     </c:otherwise>
+
+
                 </c:choose>
             </c:when>
             <c:otherwise>
